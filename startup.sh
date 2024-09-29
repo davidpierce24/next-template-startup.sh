@@ -124,44 +124,6 @@ EOF
 } & spinner
 echo "Prettier configuration file created!"
 
-# # Create a Dockerfile for PostgreSQL
-# echo "Creating a Dockerfile for PostgreSQL..."
-# {
-# cat <<EOF > Dockerfile
-# # Use the official PostgreSQL image from the Docker Hub
-# FROM postgres:latest
-
-# # Set environment variables
-# ENV POSTGRES_USER=myuser
-# ENV POSTGRES_PASSWORD=mypassword
-# ENV POSTGRES_DB=mydatabase
-
-# # Expose the PostgreSQL port
-# EXPOSE 5432
-# EOF
-# } & spinner
-# echo "Dockerfile created!"
-
-# # Step 3: Create a Docker Compose file
-# echo "Creating a Docker Compose file..."
-# {
-# cat <<EOF > docker-compose.yml
-# version: '3.8'
-
-# services:
-#   db:
-#     build: .
-#     container_name: postgres_db
-#     ports:
-#       - "5432:5432"
-#     environment:
-#       POSTGRES_USER: myuser
-#       POSTGRES_PASSWORD: mypassword
-#       POSTGRES_DB: mydatabase
-# EOF
-# } & spinner
-# echo "Docker Compose file created!"
-
 # Setup database based on choice
 {
 case $db_choice in
