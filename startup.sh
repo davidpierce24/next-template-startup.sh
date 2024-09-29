@@ -33,6 +33,18 @@ if [[ "$package_manager" != "npm" && "$package_manager" != "yarn" && "$package_m
     exit 1
 fi
 
+# Prompt for database choice
+echo "Choose a database:"
+db_options=("postgres" "sqlite" "mysql")
+select db_choice in "${db_options[@]}"; do
+    if [[ " ${db_options[*]} " == *" $db_choice "* ]]; then
+        echo "You chose $db_choice"
+        break
+    else
+        echo "Invalid option. Please choose a valid database."
+    fi
+done
+
 # Create VS Code settings file
 echo "Creating VS Code settings file..."
 {
@@ -112,34 +124,56 @@ EOF
 } & spinner
 echo "Prettier configuration file created!"
 
-# Create a Dockerfile for PostgreSQL
-echo "Creating a Dockerfile for PostgreSQL..."
+# # Create a Dockerfile for PostgreSQL
+# echo "Creating a Dockerfile for PostgreSQL..."
+# {
+# cat <<EOF > Dockerfile
+# # Use the official PostgreSQL image from the Docker Hub
+# FROM postgres:latest
+
+# # Set environment variables
+# ENV POSTGRES_USER=myuser
+# ENV POSTGRES_PASSWORD=mypassword
+# ENV POSTGRES_DB=mydatabase
+
+# # Expose the PostgreSQL port
+# EXPOSE 5432
+# EOF
+# } & spinner
+# echo "Dockerfile created!"
+
+# # Step 3: Create a Docker Compose file
+# echo "Creating a Docker Compose file..."
+# {
+# cat <<EOF > docker-compose.yml
+# version: '3.8'
+
+# services:
+#   db:
+#     build: .
+#     container_name: postgres_db
+#     ports:
+#       - "5432:5432"
+#     environment:
+#       POSTGRES_USER: myuser
+#       POSTGRES_PASSWORD: mypassword
+#       POSTGRES_DB: mydatabase
+# EOF
+# } & spinner
+# echo "Docker Compose file created!"
+
+# Setup database based on choice
 {
-cat <<EOF > Dockerfile
-# Use the official PostgreSQL image from the Docker Hub
-FROM postgres:latest
-
-# Set environment variables
-ENV POSTGRES_USER=myuser
-ENV POSTGRES_PASSWORD=mypassword
-ENV POSTGRES_DB=mydatabase
-
-# Expose the PostgreSQL port
-EXPOSE 5432
-EOF
-} & spinner
-echo "Dockerfile created!"
-
-# Step 3: Create a Docker Compose file
-echo "Creating a Docker Compose file..."
-{
-cat <<EOF > docker-compose.yml
+case $db_choice in
+    postgres)
+        echo "Setting up PostgreSQL using Docker and Docker Compose..."
+        cat <<EOF > docker-compose.yml
 version: '3.8'
 
 services:
   db:
-    build: .
-    container_name: postgres_db
+    image: postgres:latest
+    restart: always
     ports:
       - "5432:5432"
     environment:
@@ -147,8 +181,36 @@ services:
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: mydatabase
 EOF
+        ;;
+    sqlite)
+        echo "Setting up SQLite locally..."
+        sqlite3 sqlite.db
+        echo "SQLite database setup complete."
+        ;;
+    mysql)
+        echo "Setting up MySQL using Docker and Docker Compose..."
+        cat <<EOF > docker-compose.yml
+version: '3.8'
+
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+EOF
+        ;;
+    *)
+        echo "Invalid database choice. Please choose postgres, sqlite, or mysql."
+        exit 1
+        ;;
+esac
 } & spinner
-echo "Docker Compose file created!"
 
 # Install Prettier and the Tailwind CSS plugin for Prettier
 echo "Installing Prettier and the Tailwind CSS plugin for Prettier..."
